@@ -26,6 +26,8 @@
     <link rel="stylesheet" href="global-search.css">    
     <script src="trust-info.js"></script>
     <script src="product-trust-info.js"></script>
+    <link rel="stylesheet" href="product-detail-modal.css">
+    <script src="product-detail.js"></script>
 
 </head>
 <body>
@@ -60,9 +62,10 @@
 <div style="text-align: center; margin: 12px 0 18px;">
     <div style="font-size: 13px; color: #555; margin-bottom: 6px;"><strong>Secure payments</strong> supported by</div>
     <div style="display: inline-flex; align-items: center; gap: 12px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" height="24" style="padding: 0 4px; vertical-align: middle;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" height="24" style="padding: 0 4px; vertical-align: middle;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/PayPal.svg" alt="PayPal" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/Visa_Logo.png" alt="Visa" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/Mastercard-logo.png" alt="Mastercard" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/cod.png" alt="Cash on Delivery" height="24" style="padding: 0 4px; vertical-align: middle;">
     </div>
 </div>
 
@@ -113,9 +116,6 @@
 
 <!-- Include the centralized floating buttons script -->
 <script src="floating-buttons.js"></script>
-<script src="trust-info.js"></script>
-<script src="product-detail.js"></script>
-<link rel="stylesheet" href="product-detail-modal.css">
 
 <script>
     // Document ready function
@@ -335,7 +335,16 @@
                 
                 // 添加点击事件，打开详情弹窗
                 productCard.addEventListener('click', function() {
+                    // 传递完整的产品信息到详情弹窗
                     openProductDetail(this.dataset.productId, this.dataset.productUrl, product);
+                    // 记录商品点击事件到GA
+                    if(typeof gtag === 'function') {
+                        gtag('event', 'product_click', {
+                            'product_id': this.dataset.productId,
+                            'product_name': product.spbt,
+                            'product_category': 'Set'
+                        });
+                    }
                 });
                 
                 // Remove loading indicator

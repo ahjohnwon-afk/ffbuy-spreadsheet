@@ -26,6 +26,8 @@
     <link rel="stylesheet" href="global-search.css">
     <script src="trust-info.js"></script>
     <script src="product-trust-info.js"></script>
+    <link rel="stylesheet" href="product-detail-modal.css">
+    <script src="product-detail.js"></script>
 
 </head>
 
@@ -60,18 +62,15 @@
         </div>
     </header>
 
-    <div style="text-align: center; margin: 12px 0 18px;">
-        <div style="font-size: 13px; color: #555; margin-bottom: 6px;"><strong>Secure payments</strong> supported by
-        </div>
-        <div style="display: inline-flex; align-items: center; gap: 12px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" height="24"
-                style="padding: 0 4px; vertical-align: middle;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" height="24"
-                style="padding: 0 4px; vertical-align: middle;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard"
-                height="24" style="padding: 0 4px; vertical-align: middle;">
-        </div>
+<div style="text-align: center; margin: 12px 0 18px;">
+    <div style="font-size: 13px; color: #555; margin-bottom: 6px;"><strong>Secure payments</strong> supported by</div>
+    <div style="display: inline-flex; align-items: center; gap: 12px;">
+        <img src="img/PayPal.svg" alt="PayPal" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/Visa_Logo.png" alt="Visa" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/Mastercard-logo.png" alt="Mastercard" height="24" style="padding: 0 4px; vertical-align: middle;">
+        <img src="img/cod.png" alt="Cash on Delivery" height="24" style="padding: 0 4px; vertical-align: middle;">
     </div>
+</div>
 
     <nav>
         <a href="HOT PRODUCTS.html"><i class="fas fa-fire"></i> HOT PRODUCTS</a>
@@ -119,8 +118,6 @@
     <div class="float-btn back-to-top"><i class="fas fa-arrow-up"></i></div>
 
     <script src="floating-buttons.js"></script>
-<script src="trust-info.js"></script>
-<link rel="stylesheet" href="product-detail-modal.css">
     <script>
         // Document ready function
         document.addEventListener('DOMContentLoaded', function () {
@@ -338,7 +335,16 @@
 
                     // 添加点击事件，打开详情弹窗
                     productCard.addEventListener('click', function() {
+                        // 传递完整的产品信息到详情弹窗
                         openProductDetail(this.dataset.productId, this.dataset.productUrl, product);
+                        // 记录商品点击事件到GA
+                        if(typeof gtag === 'function') {
+                            gtag('event', 'product_click', {
+                                'product_id': this.dataset.productId,
+                                'product_name': product.spbt,
+                                'product_category': 'T-Shirt'
+                            });
+                        }
                     });
 
                     // Remove loading indicator
@@ -382,178 +388,7 @@
             }
         }
 
-        // 打开商品详情弹窗
-        function openProductDetail(productID, productUrl, productData) {
-            const modal = document.getElementById('productDetailModal');
-            const detailBody = document.getElementById('productDetailBody');
-            const closeBtn = document.getElementById('closeDetailModal');
-            
-            // 显示弹窗
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // 防止背景滚动
-            
-            // 显示加载中
-            detailBody.innerHTML = `
-                <div class="product-detail-loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在加载商品详情...
-                </div>
-            `;
-            
-            // 关闭按钮事件
-            closeBtn.onclick = function() {
-                closeProductDetail();
-            };
-            
-            // 点击弹窗外部关闭
-            modal.onclick = function(event) {
-                if (event.target === modal) {
-                    closeProductDetail();
-                }
-            };
-            
-            // 如果有商品ID，则获取详情
-            if (productID) {
-                fetchProductDetail(productID, productUrl, productData);
-            } else {
-                // 如果没有ID，显示基本信息
-                showBasicProductDetail(productUrl, productData);
-            }
-        }
-        
-        // 关闭商品详情弹窗
-        function closeProductDetail() {
-            const modal = document.getElementById('productDetailModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = ''; // 恢复背景滚动
-        }
-        
-        // 获取商品详情
-        function fetchProductDetail(productID, productUrl, productData) {
-            const detailBody = document.getElementById('productDetailBody');
-            const apiUrl = `https://cnfans.com/search-api/detail/product-info?platform=WEIDIAN&productID=${productID}&forceReload=false&site=cnfans&lang=zh&wmc-currency=USD`;
-            
-            fetch(apiUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('获取商品详情失败');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // 显示详细信息
-                    renderProductDetail(data, productUrl, productData);
-                })
-                .catch(error => {
-                    console.error('Error fetching product detail:', error);
-                    // 如果API请求失败，显示基本信息
-                    showBasicProductDetail(productUrl, productData);
-                });
-        }
-        
-        // 显示基本商品信息（当API请求失败时）
-        function showBasicProductDetail(productUrl, productData) {
-            const detailBody = document.getElementById('productDetailBody');
-            
-            detailBody.innerHTML = `
-                <div class="product-detail-images">
-                    <img src="${productData.ztURL}" class="product-detail-main-image" alt="${productData.spbt}">
-                </div>
-                <div class="product-detail-info">
-                    <h3>${productData.spbt}</h3>
-                    <div class="product-detail-price">${productData.US || '--'}</div>
-                    <div class="product-detail-actions">
-                        <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // 渲染商品详情
-        function renderProductDetail(detailData, productUrl, productData) {
-            const detailBody = document.getElementById('productDetailBody');
-            
-            // 如果API返回了错误或没有数据
-            if (!detailData || !detailData.data) {
-                showBasicProductDetail(productUrl, productData);
-                return;
-            }
-            
-            const data = detailData.data;
-            
-            // 准备图片
-            let imagesHtml = '';
-            let thumbnailsHtml = '';
-            
-            // 使用API返回的productDetail.productImgList字段或备用图片
-            const images = data.productDetail && data.productDetail.productImgList && data.productDetail.productImgList.length > 0 ? 
-                data.productDetail.productImgList : 
-                (data.images && data.images.length > 0 ? data.images : [productData.ztURL]);
-            
-            if (images && images.length > 0) {
-                imagesHtml = `<img src="${images[0]}" class="product-detail-main-image" alt="${data.title || productData.spbt}">`;
-                
-                // 缩略图
-                thumbnailsHtml = images.map((img, index) => 
-                    `<img src="${img}" class="product-detail-thumbnail ${index === 0 ? 'active' : ''}" 
-                          alt="缩略图 ${index + 1}" data-index="${index}">`
-                ).join('');
-            }
-            
-            // 准备属性
-            let attributesHtml = '';
-            if (data.attributes && data.attributes.length > 0) {
-                attributesHtml = data.attributes.map(attr => 
-                    `<div class="product-detail-attribute">
-                        <div class="attribute-name">${attr.name || '属性'}:</div>
-                        <div class="attribute-value">${attr.value || '-'}</div>
-                    </div>`
-                ).join('');
-            }
-            
-            // 渲染详情
-            detailBody.innerHTML = `
-                <div class="product-detail-images">
-                    ${imagesHtml}
-                    <div class="product-detail-thumbnails">
-                        ${thumbnailsHtml}
-                    </div>
-                </div>
-                <div class="product-detail-info">
-                    <h3 class="product-detail-title">${data.title || productData.spbt}</h3>
-                    <div class="product-detail-price">${data.price || productData.US || '--'}</div>
-                    
-                    ${data.description ? `<div class="product-detail-description">${data.description}</div>` : ''}
-                    
-                    ${attributesHtml ? `<div class="product-detail-attributes">${attributesHtml}</div>` : ''}
-                    
-                    <div class="product-detail-actions">
-                        <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
-                    </div>
-                </div>
-            `;
-            
-            // 添加缩略图点击事件
-            const thumbnails = document.querySelectorAll('.product-detail-thumbnail');
-            const mainImage = document.querySelector('.product-detail-main-image');
-            
-            thumbnails.forEach(thumb => {
-                thumb.addEventListener('click', function() {
-                    // 更新主图
-                    mainImage.src = this.src;
-                    
-                    // 更新选中状态
-                    thumbnails.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-        }
-
-        // 添加ESC键关闭弹窗
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeProductDetail();
-            }
-        });
+        // Product detail functionality has been moved to product-detail.js
 
         // When page is loaded, call fetchProducts function to get product data
         document.addEventListener('DOMContentLoaded', fetchProducts);

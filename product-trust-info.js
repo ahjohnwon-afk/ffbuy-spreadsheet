@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         trustInfo.style.padding = '3px 0';
         trustInfo.style.borderTop = '1px dashed #eee';
         trustInfo.style.borderBottom = '1px dashed #eee';
-        trustInfo.innerHTML = 'Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page';
+        trustInfo.innerHTML = 'Click to view <span style="color: #2476db; font-weight: 600;">product details</span>';
         
         // 将信任提示插入到价格前面
         const priceDiv = productInfo.querySelector('.product-price');

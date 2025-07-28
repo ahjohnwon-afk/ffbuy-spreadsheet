@@ -248,7 +248,7 @@ function performGlobalSearch(searchTerm) {
                                 <div class="product-subtitle">${product.category || 'Premium'} | ${product.brand || 'Quality Product'}</div>
                                 
                                 <div class="product-note">
-                                  <i class="fas fa-external-link-alt"></i> Click to visit <strong style="color: #2476db; font-weight:600;">CNFANS</strong> official ordering page
+                                  <i class="fas fa-external-link-alt"></i> Click to view <strong style="color: #2476db; font-weight:600;">product details</strong>
                                 </div>
                                 
                                 <div class="product-price">

@@ -105,9 +105,11 @@ function showBasicProductDetail(productUrl, productData) {
         <div class="product-detail-info">
             <h3>${productData.spbt}</h3>
             <div class="product-detail-price">${priceDisplay}</div>
-            <div class="product-detail-actions">
-                <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
-            </div>
+            <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
+              <div class="product-detail-actions">
+                      <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
+                      <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">COD Payment</a>
+                  </div>
         </div>
     `;
 }
@@ -210,9 +212,11 @@ function renderProductDetail(detailData, productUrl, productData) {
             <h3>${data.title || productData.spbt}</h3>
             <div class="product-detail-price">${priceDisplay}</div>
             ${attributesHtml}
+            <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
             <div class="product-detail-actions">
-                <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
-            </div>
+                  <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
+                  <a href="https://wa.me/message/INCWNKPORGSSN1?utm_source=facebook&utm_medium=ads&utm_campaign=ffbuywhatsapp_autojoin" target="_blank" class="product-detail-buy-btn">COD Payment</a>
+              </div>
         </div>
     `;
     

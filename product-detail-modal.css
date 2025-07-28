@@ -131,6 +131,24 @@
   margin-left: 2px;
 }
 
+/* 访问CNFANS文本样式 */
+.product-detail-visit-text {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  margin: 10px 0 15px;
+  padding: 8px 0;
+  border-top: 1px dashed #eee;
+  border-bottom: 1px dashed #eee;
+}
+
+/* 按钮容器样式 */
+.product-detail-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 /* 按钮悬停效果优化 */
 .product-detail-buy-btn {
   display: inline-block;
@@ -143,6 +161,8 @@
   transition: all 0.3s ease;
   border: none;
   cursor: pointer;
+  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 .product-detail-buy-btn:hover {
@@ -196,6 +216,27 @@
   .product-detail-price {
     font-size: 20px;
     margin-bottom: 10px;
+  }
+  
+  /* 移动设备上调整访问文本 */
+  .product-detail-visit-text {
+    font-size: 12px;
+    margin: 8px 0 12px;
+    padding: 6px 0;
+  }
+  
+  /* 移动设备上调整按钮 */
+  .product-detail-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .product-detail-buy-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    margin-right: 8px;
+    margin-bottom: 8px;
   }
   
   /* 移动设备上调整布局 */
