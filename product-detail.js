@@ -107,8 +107,30 @@ function showBasicProductDetail(productUrl, productData) {
             <div class="product-detail-price">${priceDisplay}</div>
             <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
               <div class="product-detail-actions">
-                      <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
-                      <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">COD Payment</a>
+                      <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
+                          <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                          <span>CNFANS</span>
+                      </a>
+                      <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
+                          <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
+                          <span>loongbuy</span>
+                      </a>
+                      <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
+                          <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
+                          <span>oopbuy</span>
+                      </a>
+                      <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
+                          <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
+                          <span>allchinabuy</span>
+                      </a>
+                      <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
+                          <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
+                          <span>mulebuy</span>
+                      </a>
+                      <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                          <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
+                          <span>kakobuy</span>
+                      </a>
                   </div>
         </div>
     `;
@@ -212,10 +234,32 @@ function renderProductDetail(detailData, productUrl, productData) {
             <h3>${data.title || productData.spbt}</h3>
             <div class="product-detail-price">${priceDisplay}</div>
             ${attributesHtml}
-            <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
+            <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
             <div class="product-detail-actions">
-                  <a href="${productUrl}" target="_blank" class="product-detail-buy-btn">View Product</a>
-                  <a href="https://wa.me/message/INCWNKPORGSSN1?utm_source=facebook&utm_medium=ads&utm_campaign=ffbuywhatsapp_autojoin" target="_blank" class="product-detail-buy-btn">COD Payment</a>
+                  <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
+                      <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                      <span>CNFANS</span>
+                  </a>
+                  <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
+                      <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
+                      <span>loongbuy</span>
+                  </a>
+                  <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
+                      <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
+                      <span>oopbuy</span>
+                  </a>
+                  <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
+                      <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
+                      <span>allchinabuy</span>
+                  </a>
+                  <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
+                      <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
+                      <span>mulebuy</span>
+                  </a>
+                  <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                      <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
+                      <span>kakobuy</span>
+                  </a>
               </div>
         </div>
     `;
@@ -360,11 +404,26 @@ function bindProductCardClickEvent(productCard) {
     const imageElement = productCard.querySelector('.product-image');
     const priceElement = productCard.querySelector('.us-price');
     
+    // 创建基本的productData对象
     const productData = {
         spbt: titleElement ? titleElement.textContent : '',
         ztURL: imageElement ? imageElement.src : '',
         US: priceElement ? priceElement.textContent : ''
     };
+    
+    // 尝试从全局allProducts数组中查找完整的产品数据
+    if (window.allProducts && Array.isArray(window.allProducts) && productData.spbt) {
+        // 通过标题匹配查找完整产品数据
+        const fullProductData = window.allProducts.find(p => p.spbt === productData.spbt);
+        if (fullProductData) {
+            // 添加所有购买平台的URL
+            if (fullProductData.loongbuy) productData.loongbuy = fullProductData.loongbuy;
+            if (fullProductData.oopbuy) productData.oopbuy = fullProductData.oopbuy;
+            if (fullProductData.allchinabuy) productData.allchinabuy = fullProductData.allchinabuy;
+            if (fullProductData.mulebuy) productData.mulebuy = fullProductData.mulebuy;
+            if (fullProductData.kakobuy) productData.kakobuy = fullProductData.kakobuy;
+        }
+    }
     
     // 存储商品ID和URL到数据属性
     productCard.dataset.productId = productID;
@@ -373,20 +432,23 @@ function bindProductCardClickEvent(productCard) {
     
     // 为商品卡片添加点击事件
     productCard.addEventListener('click', function(event) {
-        // 如果点击的是链接元素，阻止默认行为
-        if (event.target.tagName === 'A' || event.target.closest('a')) {
+        // 如果点击的是链接元素，但不是购买按钮，阻止默认行为
+        const clickedElement = event.target.tagName === 'A' ? event.target : event.target.closest('a');
+        if (clickedElement && !clickedElement.classList.contains('product-detail-buy-btn')) {
             event.preventDefault();
         }
         openProductDetail(this.dataset.productId, this.dataset.productUrl, productData);
     });
     
-    // 如果有链接元素，阻止其默认行为
-    const linkElement = productCard.querySelector('a');
-    if (linkElement) {
-        linkElement.addEventListener('click', function(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            openProductDetail(productCard.dataset.productId, productCard.dataset.productUrl, productData);
+    // 如果有链接元素，但不是购买按钮，阻止其默认行为
+    const linkElements = productCard.querySelectorAll('a:not(.product-detail-buy-btn)');
+    if (linkElements.length > 0) {
+        linkElements.forEach(linkElement => {
+            linkElement.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                openProductDetail(productCard.dataset.productId, productCard.dataset.productUrl, productData);
+            });
         });
     }
 }

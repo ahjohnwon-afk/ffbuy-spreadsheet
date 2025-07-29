@@ -235,6 +235,8 @@
 
                     // Save all product data
                     allProducts = data.filter(product => product.spbt && product.ztURL && product.spURL);
+                    // Make allProducts globally accessible for product detail functionality
+                    window.allProducts = allProducts;
 
                     // If there's no product data, show a message
                     if (allProducts.length === 0) {

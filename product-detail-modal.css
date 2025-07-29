@@ -149,12 +149,15 @@
   flex-wrap: wrap;
 }
 
-/* 按钮悬停效果优化 */
+/* 按钮统一样式 */
 .product-detail-buy-btn {
-  display: inline-block;
-  background-color: #ff6347;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #2476db, #1e5bb8);
   color: white;
-  padding: 12px 25px;
+  padding: 12px 20px;
   border-radius: 25px;
   text-decoration: none;
   font-weight: 600;
@@ -163,12 +166,24 @@
   cursor: pointer;
   margin-right: 10px;
   margin-bottom: 10px;
+  width: 130px;
+  height: 45px;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 .product-detail-buy-btn:hover {
-  background-color: #ff7e67; /* 淡变化效果 */
+  background: linear-gradient(135deg, #1e5bb8, #1a4d9e);
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 99, 71, 0.3);
+  box-shadow: 0 5px 15px rgba(36, 118, 219, 0.4);
+}
+
+/* 按钮图标样式 */
+.btn-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 3px;
 }
 
 /* 商品详情布局优化 */
@@ -230,13 +245,22 @@
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    gap: 8px;
   }
   
   .product-detail-buy-btn {
-    padding: 10px 20px;
-    font-size: 13px;
-    margin-right: 8px;
-    margin-bottom: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 110px;
+    height: 40px;
+    gap: 6px;
+  }
+  
+  .btn-icon {
+    width: 16px;
+    height: 16px;
   }
   
   /* 移动设备上调整布局 */

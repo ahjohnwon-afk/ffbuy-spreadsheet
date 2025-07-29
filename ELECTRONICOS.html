@@ -236,6 +236,8 @@
                 
                 // 保存所有产品数据
                 allProducts = data.filter(product => product.spbt && product.ztURL && product.spURL);
+                // Make allProducts globally accessible for product detail functionality
+                window.allProducts = allProducts;
                 
                 // 如果没有产品数据，显示提示信息
                 if (allProducts.length === 0) {
