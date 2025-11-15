@@ -22,6 +22,7 @@ function openProductDetail(productID, productUrl, productData) {
     
     window.__ffbuy_currentProduct = { id: productID || '', url: productUrl || '', title: (productData && productData.spbt) || '', category: (window.SPA && window.SPA.currentCategory) || '' };
     modal.style.display = 'block';
+    setTimeout(function(){ modal.classList.add('open'); }, 0);
     document.body.style.overflow = 'hidden'; // 防止背景滚动
     
     // 显示加载中
@@ -49,6 +50,55 @@ function openProductDetail(productID, productUrl, productData) {
             closeProductDetail();
         }
     });
+
+    // 移动端下拉关闭（Bottom Sheet 手势）
+    (function(){
+        var sheet = modal.querySelector('.product-detail-content');
+        var bodyEl = modal.querySelector('.product-detail-body');
+        if (!sheet) return;
+        var startY = 0, pulled = 0, dragging = false, startScrollTop = 0, startTime = 0;
+        var minToClosePx = Math.min(window.innerHeight * 0.25, 220);
+        function onStart(e){
+            if (!e.touches || e.touches.length !== 1) return;
+            startY = e.touches[0].clientY;
+            startScrollTop = bodyEl ? bodyEl.scrollTop : 0;
+            pulled = 0; dragging = false; startTime = Date.now();
+        }
+        function onMove(e){
+            if (!e.touches || e.touches.length !== 1) return;
+            var dy = e.touches[0].clientY - startY;
+            if (dy <= 0) return;
+            if (!dragging) {
+                if (startScrollTop > 0) return;
+                dragging = true;
+                sheet.classList.add('dragging');
+            }
+            pulled = dy;
+            e.preventDefault();
+            sheet.style.transform = 'translateY(' + dy + 'px)';
+            var ratio = Math.max(0, Math.min(1, dy / (window.innerHeight * 0.8)));
+            modal.style.opacity = String(1 - 0.8 * ratio);
+        }
+        function onEnd(){
+            if (!dragging) return;
+            sheet.classList.remove('dragging');
+            var quick = (Date.now() - startTime) < 180 && pulled > 80;
+            var shouldClose = quick || pulled > minToClosePx;
+            if (shouldClose) {
+                closeProductDetail();
+            } else {
+                sheet.style.transition = 'transform 0.2s ease';
+                sheet.style.transform = 'translateY(0)';
+                setTimeout(function(){ sheet.style.transition = ''; }, 220);
+                modal.style.opacity = '';
+            }
+            dragging = false;
+        }
+        sheet.addEventListener('touchstart', onStart, { passive: true });
+        sheet.addEventListener('touchmove', onMove, { passive: false });
+        sheet.addEventListener('touchend', onEnd, { passive: true });
+        modal.__sheetHandlers = { sheet: sheet, onStart: onStart, onMove: onMove, onEnd: onEnd };
+    })();
     
     // 如果有商品ID，则获取详情
     if (productID) {
@@ -62,44 +112,83 @@ function openProductDetail(productID, productUrl, productData) {
 // 关闭商品详情弹窗
 function closeProductDetail() {
     const modal = document.getElementById('productDetailModal');
-    modal.style.display = 'none';
+    // 清理手势监听与内联样式
+    if (modal && modal.__sheetHandlers) {
+        try {
+            var h = modal.__sheetHandlers;
+            if (h.sheet) {
+                h.sheet.removeEventListener('touchstart', h.onStart);
+                h.sheet.removeEventListener('touchmove', h.onMove);
+                h.sheet.removeEventListener('touchend', h.onEnd);
+                h.sheet.style.transform = '';
+                h.sheet.style.transition = '';
+            }
+        } catch (e) {}
+        delete modal.__sheetHandlers;
+    }
+    modal.style.opacity = '';
+    modal.classList.remove('open');
+    setTimeout(function(){ modal.style.display = 'none'; }, 300);
     document.body.style.overflow = ''; // 恢复背景滚动
 }
 
 // 获取商品详情
 function fetchProductDetail(productID, productUrl, productData) {
     const detailBody = document.getElementById('productDetailBody');
-    
-    // 检查商品ID是否有效
     if (!productID || productID.trim() === '') {
-        console.warn('无效的商品ID，显示基本信息');
         showBasicProductDetail(productUrl, productData);
         return;
     }
-    
-    const apiUrl = `https://cnfans.com/search-api/detail/product-info?platform=WEIDIAN&productID=${productID}&forceReload=false&site=cnfans&lang=zh&wmc-currency=USD`;
-    
-    // 添加错误处理和超时
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('请求超时')), 10000); // 10秒超时
-    });
-    
-    Promise.race([fetch(apiUrl), timeoutPromise])
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`获取商品详情失败: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            // 显示详细信息
+    const timeoutMs = (window.CONFIG && CONFIG.API && CONFIG.API.TIMEOUT) || 10000;
+    const endpoints = [
+        'https://m.cnfans.com/search-api/detail/product-info',
+        'https://cnfans.com/search-api/detail/product-info'
+    ];
+    if (!window.__ffbuy_detailCache) window.__ffbuy_detailCache = {};
+    if (!window.__ffbuy_detailInflight) window.__ffbuy_detailInflight = {};
+    const cacheKey = productID;
+    const cached = window.__ffbuy_detailCache[cacheKey];
+    if (cached) {
+        renderProductDetail(cached, productUrl, productData);
+        return;
+    }
+    if (window.__ffbuy_detailInflight[cacheKey]) {
+        window.__ffbuy_detailInflight[cacheKey]
+            .then(data => { if (data) renderProductDetail(data, productUrl, productData); else showBasicProductDetail(productUrl, productData); })
+            .catch(() => { showBasicProductDetail(productUrl, productData); });
+        return;
+    }
+    const doFetch = async () => {
+        for (let i = 0; i < endpoints.length; i++) {
+            const base = endpoints[i];
+            const url = `${base}?platform=WEIDIAN&productID=${productID}&forceReload=false&site=cnfans&lang=zh&wmc-currency=USD`;
+            try {
+                const controller = new AbortController();
+                const t = setTimeout(() => controller.abort(), timeoutMs);
+                const res = await fetch(url, { signal: controller.signal });
+                clearTimeout(t);
+                if (res && res.ok) {
+                    const json = await res.json();
+                    return json;
+                }
+            } catch (e) {}
+        }
+        return null;
+    };
+    const p = doFetch();
+    window.__ffbuy_detailInflight[cacheKey] = p;
+    p.then(data => {
+        delete window.__ffbuy_detailInflight[cacheKey];
+        if (data) {
+            window.__ffbuy_detailCache[cacheKey] = data;
             renderProductDetail(data, productUrl, productData);
-        })
-        .catch(error => {
-            console.error('Error fetching product detail:', error);
-            // 如果API请求失败，显示基本信息
+        } else {
             showBasicProductDetail(productUrl, productData);
-        });
+        }
+    }).catch(() => {
+        delete window.__ffbuy_detailInflight[cacheKey];
+        showBasicProductDetail(productUrl, productData);
+    });
 }
 
 // 显示基本商品信息（当API请求失败时）
@@ -121,31 +210,42 @@ function showBasicProductDetail(productUrl, productData) {
             <div class="product-detail-price">${priceDisplay}</div>
             <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
               <div class="product-detail-actions">
-                      <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
-                          <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
-                          <span>CNFANS</span>
-                      </a>
-                      <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
-                          <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
-                          <span>loongbuy</span>
-                      </a>
-                      <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
-                          <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
-                          <span>oopbuy</span>
-                      </a>
-                      <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
-                          <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
-                          <span>allchinabuy</span>
-                      </a>
-                      <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
-                          <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
-                          <span>mulebuy</span>
-                      </a>
-                      <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
-                          <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
-                          <span>kakobuy</span>
-                      </a>
-                  </div>
+                    <div class="agent-top">
+                        <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
+                            <span class="agent-texts">
+                                <span class="agent-name">lovegobuy</span>
+                                <span class="agent-offer-inline">10% OFF + Free Items</span>
+                            </span>
+                        </a>
+                    </div>
+                    <div class="agent-grid">
+                        <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
+                            <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                            <span>CNFANS</span>
+                        </a>
+                        <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
+                            <span>loongbuy</span>
+                        </a>
+                        <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
+                            <span>oopbuy</span>
+                        </a>
+                        <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
+                            <span>allchinabuy</span>
+                        </a>
+                        <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
+                            <span>mulebuy</span>
+                        </a>
+                        <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
+                            <span>kakobuy</span>
+                        </a>
+                    </div>
+              </div>
         </div>
     `;
     const agentBtns1 = detailBody.querySelectorAll('.product-detail-buy-btn');
@@ -154,7 +254,7 @@ function showBasicProductDetail(productUrl, productData) {
             var href = this.getAttribute('href') || '';
             e.preventDefault();
             e.stopPropagation();
-            var name = this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : (this.textContent || '').trim();
+            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
             var ok = gaSendEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
@@ -178,51 +278,48 @@ function renderProductDetail(detailData, productUrl, productData) {
     let imagesHtml = '';
     let thumbnailsHtml = '';
     
-    // 使用API返回的productImgList字段或备用图片
     let images = [];
-    
-    // 按照优先级检查各种可能的图片来源
-    if (data.productImgList && data.productImgList.length > 0) {
-        // 首先检查直接的productImgList字段
-        images = data.productImgList;
-    }
-    else if (data.productDetail && data.productDetail.productImgList && data.productDetail.productImgList.length > 0) {
-        // 然后检查productDetail.productImgList字段
-        images = data.productDetail.productImgList;
-    }
-    else if (data.images && data.images.length > 0) {
-        // 再检查images字段
+    if (data.productInfo && Array.isArray(data.productInfo.imgList) && data.productInfo.imgList.length > 0) {
+        images = data.productInfo.imgList;
+    } else if (data.imgList && data.imgList.length > 0) {
+        images = data.imgList;
+    } else if (data.productDetail && Array.isArray(data.productDetail.imgList) && data.productDetail.imgList.length > 0) {
+        images = data.productDetail.imgList;
+    } else if (data.images && data.images.length > 0) {
         images = data.images;
-    }
-    else {
-        // 如果都没有，使用商品卡片的图片
+    } else {
         images = [productData.ztURL];
     }
+    images = images.map(function(u){ return String(u).trim().replace(/`/g, ''); });
     
     // 生成主图和缩略图HTML
     if (images && images.length > 0) {
-        imagesHtml = `<img src="${images[0]}" class="product-detail-main-image" alt="${productData.spbt}" id="mainDetailImage">`;
-        
-        // 生成缩略图 - 支持横向滚动
-        if (images.length > 1) {
-            thumbnailsHtml = '<div class="product-detail-thumbnails-wrapper">';
-            // 添加左右滑动指示器
-            if (images.length > 4) {
-                thumbnailsHtml += '<div class="thumbnail-scroll-indicator left"><i class="fas fa-chevron-left"></i></div>';
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            imagesHtml = `<div class="product-detail-slider" id="detailSlider">
+                <div class="product-detail-slider-track" id="detailSliderTrack">
+                    ${images.map(img => `<img src="${img}" class="product-detail-slide" alt="${productData.spbt}">`).join('')}
+                </div>
+                ${images.length > 1 ? `<div class="product-detail-dots" id="detailSliderDots">${images.map((_,i)=>`<span class="dot${i===0?' active':''}"></span>`).join('')}</div>` : ''}
+            </div>`;
+        } else {
+            imagesHtml = `<img src="${images[0]}" class="product-detail-main-image" alt="${productData.spbt}" id="mainDetailImage">`;
+            // 生成缩略图 - 支持横向滚动
+            if (images.length > 1) {
+                thumbnailsHtml = '<div class="product-detail-thumbnails-wrapper">';
+                if (images.length > 4) {
+                    thumbnailsHtml += '<div class="thumbnail-scroll-indicator left"><i class="fas fa-chevron-left"></i></div>';
+                }
+                thumbnailsHtml += '<div class="product-detail-thumbnails">';
+                images.forEach((img, index) => {
+                    thumbnailsHtml += `<img src="${img}" class="product-detail-thumbnail ${index === 0 ? 'active' : ''}" alt="Thumbnail ${index + 1}">`;
+                });
+                thumbnailsHtml += '</div>';
+                if (images.length > 4) {
+                    thumbnailsHtml += '<div class="thumbnail-scroll-indicator right"><i class="fas fa-chevron-right"></i></div>';
+                }
+                thumbnailsHtml += '</div>';
             }
-            
-            thumbnailsHtml += '<div class="product-detail-thumbnails">';
-            images.forEach((img, index) => {
-                thumbnailsHtml += `<img src="${img}" class="product-detail-thumbnail ${index === 0 ? 'active' : ''}" alt="Thumbnail ${index + 1}">`;
-            });
-            thumbnailsHtml += '</div>';
-            
-            // 添加右侧滑动指示器
-            if (images.length > 4) {
-                thumbnailsHtml += '<div class="thumbnail-scroll-indicator right"><i class="fas fa-chevron-right"></i></div>';
-            }
-            
-            thumbnailsHtml += '</div>';
         }
     } else {
         // 如果没有图片，使用默认图片
@@ -262,31 +359,42 @@ function renderProductDetail(detailData, productUrl, productData) {
             ${attributesHtml}
             <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
             <div class="product-detail-actions">
-                  <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
-                      <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
-                      <span>CNFANS</span>
-                  </a>
-                  <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
-                      <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
-                      <span>loongbuy</span>
-                  </a>
-                  <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
-                      <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
-                      <span>oopbuy</span>
-                  </a>
-                  <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
-                      <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
-                      <span>allchinabuy</span>
-                  </a>
-                  <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
-                      <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
-                      <span>mulebuy</span>
-                  </a>
-                  <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
-                      <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
-                      <span>kakobuy</span>
-                  </a>
-              </div>
+                <div class="agent-top">
+                    <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
+                        <span class="agent-texts">
+                            <span class="agent-name">lovegobuy</span>
+                            <span class="agent-offer-inline">10% OFF + Free Items</span>
+                        </span>
+                    </a>
+                </div>
+                <div class="agent-grid">
+                    <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
+                        <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                        <span>CNFANS</span>
+                    </a>
+                    <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
+                        <span>loongbuy</span>
+                    </a>
+                    <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
+                        <span>oopbuy</span>
+                    </a>
+                    <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
+                        <span>allchinabuy</span>
+                    </a>
+                    <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
+                        <span>mulebuy</span>
+                    </a>
+                    <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
+                        <span>kakobuy</span>
+                    </a>
+                </div>
+            </div>
         </div>
     `;
     
@@ -296,7 +404,7 @@ function renderProductDetail(detailData, productUrl, productData) {
             var href = this.getAttribute('href') || '';
             e.preventDefault();
             e.stopPropagation();
-            var name = this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : (this.textContent || '').trim();
+            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
             var ok = gaSendEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
@@ -304,6 +412,7 @@ function renderProductDetail(detailData, productUrl, productData) {
     });
     const thumbnails = detailBody.querySelectorAll('.product-detail-thumbnail');
     const mainImage = document.getElementById('mainDetailImage');
+    var currentImageIndex = 0;
     const thumbnailsContainer = detailBody.querySelector('.product-detail-thumbnails');
     const leftIndicator = detailBody.querySelector('.thumbnail-scroll-indicator.left');
     const rightIndicator = detailBody.querySelector('.thumbnail-scroll-indicator.right');
@@ -311,8 +420,8 @@ function renderProductDetail(detailData, productUrl, productData) {
     if (thumbnails.length > 0 && mainImage) {
         thumbnails.forEach((thumb, index) => {
             thumb.addEventListener('click', function() {
-                // 更新主图
                 mainImage.src = images[index];
+                currentImageIndex = index;
                 
                 // 更新缩略图激活状态
                 thumbnails.forEach(t => t.classList.remove('active'));
@@ -357,6 +466,46 @@ function renderProductDetail(detailData, productUrl, productData) {
             });
         }
     }
+
+    var imagesWrap = detailBody.querySelector('.product-detail-images');
+    if (imagesWrap && mainImage && images && images.length > 1 && !document.getElementById('detailSliderTrack')) {
+        var startX = 0; var dx = 0; var moved = false;
+        function setIndex(i){
+            if (i < 0 || i >= images.length) return;
+            currentImageIndex = i;
+            mainImage.src = images[i];
+            if (thumbnails && thumbnails.length) {
+                thumbnails.forEach(function(t){ t.classList.remove('active'); });
+                var t = thumbnails[i]; if (t) t.classList.add('active');
+            }
+        }
+        imagesWrap.addEventListener('touchstart', function(e){ if (!e.touches || e.touches.length !== 1) return; startX = e.touches[0].clientX; dx = 0; moved = false; }, { passive: true });
+        imagesWrap.addEventListener('touchmove', function(e){ if (!e.touches || e.touches.length !== 1) return; dx = e.touches[0].clientX - startX; if (Math.abs(dx) > 10) moved = true; }, { passive: true });
+        imagesWrap.addEventListener('touchend', function(){ if (!moved) return; if (Math.abs(dx) > 50) { if (dx < 0 && currentImageIndex < images.length - 1) setIndex(currentImageIndex + 1); else if (dx > 0 && currentImageIndex > 0) setIndex(currentImageIndex - 1); } dx = 0; moved = false; }, { passive: true });
+    }
+
+    // 移动端丝滑滑动轮播 + 指示点
+    (function(){
+        var track = document.getElementById('detailSliderTrack');
+        var dotsWrap = document.getElementById('detailSliderDots');
+        if (!track || !images || images.length <= 1) return;
+        var slider = document.getElementById('detailSlider');
+        var index = 0; var startX = 0; var startY = 0; var dx = 0; var dy = 0;
+        var width = 0; var dragging = false; var lockedAxis = null; // 'x'|'y'
+        function updateSize(){ width = slider.clientWidth; goTo(index, false); }
+        function goTo(i, animate){ index = Math.max(0, Math.min(images.length-1, i)); if (animate) track.classList.remove('no-anim'), track.style.transition = ''; else track.classList.add('no-anim'); track.style.transform = 'translateX(' + (-index*width) + 'px)'; updateDots(); slider.classList.remove('sliding'); }
+        function updateDots(){ if (!dotsWrap) return; var dots = dotsWrap.querySelectorAll('.dot'); dots.forEach(function(d,i){ if (i===index) d.classList.add('active'); else d.classList.remove('active'); }); }
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        track.addEventListener('touchstart', function(e){ if (!e.touches || e.touches.length!==1) return; startX = e.touches[0].clientX; startY = e.touches[0].clientY; dx = 0; dy = 0; dragging = true; lockedAxis = null; track.classList.add('no-anim'); slider.classList.add('dragging'); }, { passive: true });
+        track.addEventListener('touchmove', function(e){ if (!dragging || !e.touches) return; var x = e.touches[0].clientX, y = e.touches[0].clientY; dx = x - startX; dy = y - startY; if (!lockedAxis) { if (Math.abs(dx) > 8) lockedAxis = 'x'; else if (Math.abs(dy) > 8) lockedAxis = 'y'; }
+            if (lockedAxis === 'x') { e.preventDefault(); track.style.transform = 'translateX(' + ((-index*width) + dx) + 'px)'; } }, { passive: false });
+        track.addEventListener('touchend', function(){ if (!dragging) return; dragging = false; track.classList.remove('no-anim'); var threshold = Math.max(50, width*0.12); if (lockedAxis === 'x') { if (dx < -threshold && index < images.length-1) index++; else if (dx > threshold && index > 0) index--; }
+            slider.classList.remove('dragging'); slider.classList.add('sliding'); goTo(index, true); dx = 0; dy = 0; lockedAxis = null; }, { passive: true });
+        if (dotsWrap) {
+            dotsWrap.addEventListener('click', function(e){ var idx = Array.prototype.indexOf.call(dotsWrap.children, e.target); if (idx >= 0) { index = idx; goTo(index, true); } });
+        }
+    })();
 }
 
 // 在页面加载完成后，为所有商品卡片添加点击事件
@@ -408,6 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.allProducts && Array.isArray(window.allProducts) && data.spbt) {
                 var full = window.allProducts.find(function(p){ return p.spbt === data.spbt; });
                 if (full) {
+                    if (full.lovegobuy) data.lovegobuy = full.lovegobuy;
                     if (full.loongbuy) data.loongbuy = full.loongbuy;
                     if (full.oopbuy) data.oopbuy = full.oopbuy;
                     if (full.allchinabuy) data.allchinabuy = full.allchinabuy;
@@ -487,6 +637,7 @@ function bindProductCardClickEvent(productCard) {
         const fullProductData = window.allProducts.find(p => p.spbt === productData.spbt);
         if (fullProductData) {
             // 添加所有购买平台的URL
+            if (fullProductData.lovegobuy) productData.lovegobuy = fullProductData.lovegobuy;
             if (fullProductData.loongbuy) productData.loongbuy = fullProductData.loongbuy;
             if (fullProductData.oopbuy) productData.oopbuy = fullProductData.oopbuy;
             if (fullProductData.allchinabuy) productData.allchinabuy = fullProductData.allchinabuy;
