@@ -214,7 +214,7 @@ function showBasicProductDetail(productUrl, productData) {
                         <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
                             <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
                             <span class="agent-texts">
-                                <span class="agent-name">lovegobuy</span>
+                                <span class="agent-name">LoveGoBuy</span>
                                 <span class="agent-offer-inline">10% OFF + Free Items</span>
                             </span>
                         </a>
@@ -222,27 +222,31 @@ function showBasicProductDetail(productUrl, productData) {
                     <div class="agent-grid">
                         <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
                             <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
-                            <span>CNFANS</span>
+                            <span>CNFans</span>
                         </a>
-                        <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
-                            <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
-                            <span>loongbuy</span>
+                        <a href="${productData.acbuy || ''}" target="_blank" class="product-detail-buy-btn acbuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/acbuy.png" alt="acbuy" class="btn-icon">
+                            <span>ACBuy</span>
                         </a>
                         <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
                             <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
-                            <span>oopbuy</span>
-                        </a>
-                        <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
-                            <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
-                            <span>allchinabuy</span>
-                        </a>
-                        <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
-                            <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
-                            <span>mulebuy</span>
+                            <span>OopBuy</span>
                         </a>
                         <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
                             <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
-                            <span>kakobuy</span>
+                            <span>KakoBuy</span>
+                        </a>
+                        <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
+                            <span>MuleBuy</span>
+                        </a>
+                        <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
+                            <span>AllChinaBuy</span>
+                        </a>
+                        <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
+                            <span>LoongBuy</span>
                         </a>
                     </div>
               </div>
@@ -254,7 +258,7 @@ function showBasicProductDetail(productUrl, productData) {
             var href = this.getAttribute('href') || '';
             e.preventDefault();
             e.stopPropagation();
-            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : (this.textContent || '').trim();
+            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
             var ok = gaSendEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
@@ -363,7 +367,7 @@ function renderProductDetail(detailData, productUrl, productData) {
                     <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
                         <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
                         <span class="agent-texts">
-                            <span class="agent-name">lovegobuy</span>
+                            <span class="agent-name">LoveGoBuy</span>
                             <span class="agent-offer-inline">10% OFF + Free Items</span>
                         </span>
                     </a>
@@ -371,27 +375,31 @@ function renderProductDetail(detailData, productUrl, productData) {
                 <div class="agent-grid">
                     <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
                         <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
-                        <span>CNFANS</span>
+                        <span>CNFans</span>
                     </a>
-                    <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
-                        <span>loongbuy</span>
+                    <a href="${productData.acbuy || ''}" target="_blank" class="product-detail-buy-btn acbuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/acbuy.png" alt="acbuy" class="btn-icon">
+                        <span>ACBuy</span>
                     </a>
                     <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
                         <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
-                        <span>oopbuy</span>
-                    </a>
-                    <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
-                        <span>allchinabuy</span>
-                    </a>
-                    <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
-                        <span>mulebuy</span>
+                        <span>OopBuy</span>
                     </a>
                     <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
                         <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
-                        <span>kakobuy</span>
+                        <span>KakoBuy</span>
+                    </a>
+                    <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
+                        <span>MuleBuy</span>
+                    </a>
+                    <a href="${productData.allchinabuy || ''}" target="_blank" class="product-detail-buy-btn allchinabuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/allchinabuy.ico" alt="allchinabuy" class="btn-icon">
+                        <span>AllChinaBuy</span>
+                    </a>
+                    <a href="${productData.loongbuy || ''}" target="_blank" class="product-detail-buy-btn loongbuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/loongbuy.webp" alt="loongbuy" class="btn-icon">
+                        <span>LoongBuy</span>
                     </a>
                 </div>
             </div>
@@ -404,7 +412,7 @@ function renderProductDetail(detailData, productUrl, productData) {
             var href = this.getAttribute('href') || '';
             e.preventDefault();
             e.stopPropagation();
-            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : (this.textContent || '').trim();
+            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
             var ok = gaSendEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
@@ -563,6 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (full.allchinabuy) data.allchinabuy = full.allchinabuy;
                     if (full.mulebuy) data.mulebuy = full.mulebuy;
                     if (full.kakobuy) data.kakobuy = full.kakobuy;
+                    if (full.acbuy) data.acbuy = full.acbuy;
                 }
             }
             if (!wasBound) {
@@ -643,6 +652,7 @@ function bindProductCardClickEvent(productCard) {
             if (fullProductData.allchinabuy) productData.allchinabuy = fullProductData.allchinabuy;
             if (fullProductData.mulebuy) productData.mulebuy = fullProductData.mulebuy;
             if (fullProductData.kakobuy) productData.kakobuy = fullProductData.kakobuy;
+            if (fullProductData.acbuy) productData.acbuy = fullProductData.acbuy;
         }
     }
     
