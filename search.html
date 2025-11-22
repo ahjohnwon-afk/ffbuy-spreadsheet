@@ -113,7 +113,11 @@
                 if (term) {
                     // 记录搜索词到本地（用于 Popular 自动统计）
                     if (typeof recordSearchTerm === 'function') {
-                        recordSearchTerm(term);
+                        try {
+                            recordSearchTerm(term);
+                            sessionStorage.setItem('ffbuy_last_search_term', term);
+                            sessionStorage.setItem('ffbuy_last_search_ts', String(Date.now()));
+                        } catch (e) {}
                     }
                     window.location.href = `results.html?q=${encodeURIComponent(term)}`;
                 }
@@ -148,7 +152,11 @@
                 updateVisibility();
                 // 记录热门点击（同样作为一次搜索行为）
                 if (typeof recordSearchTerm === 'function') {
-                    recordSearchTerm(term);
+                    try {
+                        recordSearchTerm(term);
+                        sessionStorage.setItem('ffbuy_last_search_term', term);
+                        sessionStorage.setItem('ffbuy_last_search_ts', String(Date.now()));
+                    } catch (e) {}
                 }
                 window.location.href = `results.html?q=${encodeURIComponent(term)}`;
                 // 滚动到结果容器

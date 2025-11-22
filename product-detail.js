@@ -14,6 +14,39 @@ function gaSendEvent(name, params) {
     return false;
 }
 
+function getCid() {
+    try {
+        var k = '__cid';
+        var cid = localStorage.getItem(k);
+        if (!cid) {
+            cid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random());
+            localStorage.setItem(k, cid);
+        }
+        return cid;
+    } catch (e) { return Date.now() + '-' + Math.random(); }
+}
+
+function cfReport(event, payload) {
+    try {
+        var endpoint = (window.CONFIG && CONFIG.ANALYTICS && CONFIG.ANALYTICS.CF_ENDPOINT) || 'https://ga4.lu10221.workers.dev/collect';
+        var data = Object.assign({ event: event, ts: Date.now(), cid: getCid(), page: location.pathname, ref: document.referrer || '', ua: navigator.userAgent }, payload || {});
+        var json = JSON.stringify(data);
+        var blob = new Blob([json], { type: 'text/plain' });
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(endpoint, blob);
+        } else {
+            var isFile = (location && location.protocol === 'file:');
+            fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: json, keepalive: true, mode: isFile ? 'no-cors' : 'cors' }).catch(function(){});
+        }
+    } catch (e) {}
+}
+
+function reportEvent(name, params) {
+    var ok = gaSendEvent(name, params);
+    cfReport(name, params);
+    return ok;
+}
+
 // 打开商品详情弹窗
 function openProductDetail(productID, productUrl, productData) {
     const modal = document.getElementById('productDetailModal');
@@ -260,10 +293,14 @@ function showBasicProductDetail(productUrl, productData) {
             e.stopPropagation();
             var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
-            var ok = gaSendEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
+            var ok = reportEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
         });
     });
+    try {
+        var ctx = window.__ffbuy_currentProduct || {};
+        reportEvent('detail_view', { product_id: ctx.id || '', product_title: (productData && productData.spbt) || '', product_name: (productData && productData.spbt) || '', product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || '') });
+    } catch (e) {}
 }
 
 // 渲染商品详情
@@ -414,10 +451,14 @@ function renderProductDetail(detailData, productUrl, productData) {
             e.stopPropagation();
             var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
-            var ok = gaSendEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
+            var ok = reportEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
         });
     });
+    try {
+        var ctx2 = window.__ffbuy_currentProduct || {};
+        reportEvent('detail_view', { product_id: ctx2.id || '', product_title: (data.title || (productData && productData.spbt) || ''), product_name: (data.title || (productData && productData.spbt) || ''), product_url: (ctx2.url || productUrl || ''), category: (ctx2.category || (window.SPA && window.SPA.currentCategory) || '') });
+    } catch (e) {}
     const thumbnails = detailBody.querySelectorAll('.product-detail-thumbnail');
     const mainImage = document.getElementById('mainDetailImage');
     var currentImageIndex = 0;

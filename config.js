@@ -4,7 +4,7 @@ const CONFIG = {
     SITE: {
         NAME: '$FFBuy SpreadSheet',
         LOGO_TEXT: '$FFBuy SpreadSheet',
-        DEFAULT_CATEGORY: 'Shoes', // 默认跳转的分类
+        DEFAULT_CATEGORY: 'Hot', // 默认跳转的分类
         // 获取默认分类对象
         get defaultCategory() {
             return CONFIG.categories.find(c => c.name === this.DEFAULT_CATEGORY);
@@ -37,7 +37,7 @@ const CONFIG = {
         // 设置为你的 Workers 公开地址，例如：
         // 'https://ffbuy-popular.<your-subdomain>.workers.dev'
         // 或自定义域名：'https://popular.91link.top'
-        BASE_URL: 'https://ffbuy-popular.lu10221.workers.dev'
+        BASE_URL: 'https://webga4.lu10221.workers.dev'
     },
     
     // 分页配置
@@ -63,7 +63,8 @@ const CONFIG = {
     
     // Google Analytics配置
     ANALYTICS: {
-        TRACKING_ID: 'G-DZ3110PTYG'
+        TRACKING_ID: 'G-DZ3110PTYG',
+        CF_ENDPOINT: 'https://webga4.lu10221.workers.dev/collect'
     },
     
     // 支付方式配置
@@ -76,6 +77,12 @@ const CONFIG = {
     
     // 分类配置 - 统一管理所有分类信息 (SPA架构)
     categories: [
+        { 
+            name: 'Hot', 
+            endpoint: 'Hot', 
+            icon: 'fas fa-fire',
+            displayName: 'Hot'
+        },
         { 
             name: 'Shirts', 
             endpoint: 'Shirts', 

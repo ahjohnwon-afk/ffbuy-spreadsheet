@@ -61,9 +61,21 @@
             const term = (params.get('q') || '').toLowerCase().trim();
             document.getElementById('queryTerm').textContent = params.get('q') || '';
 
-            // 记录搜索词到本地（用于 Popular 自动统计）
             if (term && typeof recordSearchTerm === 'function') {
-                recordSearchTerm(term);
+                try {
+                    const lastTerm = sessionStorage.getItem('ffbuy_last_search_term') || '';
+                    const lastTsStr = sessionStorage.getItem('ffbuy_last_search_ts');
+                    const lastTs = lastTsStr ? parseInt(lastTsStr, 10) : 0;
+                    const now = Date.now();
+                    const recentlyRecorded = lastTerm === term && (now - lastTs) < 8000;
+                    if (!recentlyRecorded) {
+                        recordSearchTerm(term);
+                        sessionStorage.setItem('ffbuy_last_search_term', term);
+                        sessionStorage.setItem('ffbuy_last_search_ts', String(now));
+                    }
+                } catch (e) {
+                    recordSearchTerm(term);
+                }
             }
 
             if (typeof productRenderer !== 'undefined') {
@@ -91,6 +103,7 @@
                 if (loader) loader.style.display = 'none';
                 window.scrollTo(0, 0);
             }
+        
         });
     </script>
 </body>

@@ -178,6 +178,7 @@ class ProductRenderer {
         
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
+        productCard.setAttribute('data-index', index);
         productCard.style.animationDelay = `${index * 0.1}s`;
         
         const link = document.createElement('a');

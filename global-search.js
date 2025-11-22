@@ -293,11 +293,11 @@ function loadAllProducts() {
         if (typeof productService !== 'undefined') {
             return productService.fetchProducts(category.endpoint)
                 .then(data => {
-                    return data.map(product => ({
-                        ...product,
-                        category: category.name,
-                        categoryUrl: `${category.endpoint}.html`
-                    }));
+                    return data.map(product => {
+                        product.category = category.name;
+                        product.categoryUrl = `${category.endpoint}.html`;
+                        return product;
+                    });
                 })
                 .catch(error => {
                     console.error(`Error fetching ${category.name}:`, error);
@@ -320,11 +320,11 @@ function loadAllProducts() {
                 // Filter valid products and add category info
                 return data
                     .filter(product => product.spbt && product.ztURL && product.spURL)
-                    .map(product => ({
-                        ...product,
-                        category: category.name,
-                        categoryUrl: `${category.endpoint}.html`
-                    }));
+                    .map(product => {
+                        product.category = category.name;
+                        product.categoryUrl = `${category.endpoint}.html`;
+                        return product;
+                    });
             })
             .catch(error => {
                 console.error(`Error fetching ${category.name}:`, error);
@@ -347,6 +347,9 @@ function loadAllProducts() {
             });
             
             globalProducts = allProducts;
+            if (typeof window !== 'undefined') {
+                window.allProducts = globalProducts;
+            }
             isLoadingGlobalProducts = false;
             
             // 只移除全局加载指示器，不影响其他加载指示器
@@ -405,9 +408,11 @@ function performGlobalSearch(searchTerm) {
         productsContainer.classList.add('products-grid');
 
         // 过滤匹配的商品
+        // 过滤匹配的商品
         const matchingProducts = globalProducts.filter(product =>
             product.spbt && product.spbt.toLowerCase().includes(searchTerm)
         );
+        window.currentSearchResults = matchingProducts;
 
         // 使用统一产品渲染器的卡片结构，保证样式一致
         if (matchingProducts.length === 0) {
@@ -421,8 +426,9 @@ function performGlobalSearch(searchTerm) {
                     // 后备：最简卡片结构
                     const card = document.createElement('div');
                     card.className = 'product-card';
+                    card.setAttribute('data-index', i);
                     card.innerHTML = `
-                        <a href="${product.spURL}" target="_blank" rel="noopener noreferrer">
+                        <a href="#" onclick="event.preventDefault()">
                             <img src="${product.ztURL}" class="product-image" alt="${product.spbt}">
                             <div class="product-info">
                                 <div class="product-title">${product.spbt}</div>
