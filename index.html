@@ -76,6 +76,21 @@
 
     <!-- 🔥 主内容区域 -->
     <div class="container">
+        <!-- 首页弹窗 Banner -->
+        <div class="promo-modal" id="promoModal" aria-hidden="true">
+            <div class="promo-modal-content">
+                <button class="promo-modal-close" id="closePromoModal" aria-label="Close">&times;</button>
+                <div class="promo-figure">
+                    <a class="promo-link" href="https://chat.whatsapp.com/BEoGM3BcL9pHzNYmpJXiYK?mode=hqrt2" target="_blank" rel="noopener noreferrer" onclick="try{reportEvent('banner_click',{platform:'whatsapp',href:this.href,page:location.pathname});}catch(e){}">
+                        <img src="img/Banner_1.webp" alt="Join WhatsApp Group" class="promo-modal-img">
+                    </a>
+                    <div class="promo-overlay">
+                        <a class="promo-join-btn" href="https://chat.whatsapp.com/BEoGM3BcL9pHzNYmpJXiYK?mode=hqrt2" target="_blank" rel="noopener noreferrer" onclick="try{reportEvent('banner_click',{platform:'whatsapp',href:this.href,page:location.pathname});}catch(e){}">Únete ahora</a>
+                        <button type="button" class="promo-close-btn">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- 加载状态 -->
         <div id="loading-indicator" style="display: none; text-align: center; padding: 40px;">
             <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #666;"></i>
@@ -89,11 +104,7 @@
             <button onclick="SPA.retryLoadCategory()" style="margin-top: 15px; padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
         </div>
         
-        <div class="promo-banner">
-            <a href="https://chat.whatsapp.com/BEoGM3BcL9pHzNYmpJXiYK?mode=hqrt2" target="_blank" rel="noopener noreferrer" onclick="try{reportEvent('banner_click',{platform:'whatsapp',href:this.href,page:location.pathname});}catch(e){}">
-                <img src="img/Banner.png" alt="WhatsApp Group Exclusive Benefits" class="promo-banner-img">
-            </a>
-        </div>
+        
 
         <!-- 产品网格 -->
          <div class="products-grid" id="products-container">
@@ -300,6 +311,32 @@
         // 页面加载完成后初始化SPA
         document.addEventListener('DOMContentLoaded', () => {
             SPA.init();
+            // 打开首页弹窗 Banner
+            try {
+                const modal = document.getElementById('promoModal');
+                const closeBtn = document.getElementById('closePromoModal');
+                if (modal) {
+                    modal.classList.add('open');
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            try { reportEvent('banner_close', { reason: 'mask', page: location.pathname }); } catch (err) {}
+                            modal.classList.remove('open');
+                        }
+                    });
+                }
+                if (closeBtn) closeBtn.addEventListener('click', () => {
+                    try { reportEvent('banner_close', { reason: 'top_close', page: location.pathname }); } catch (err) {}
+                    const m = document.getElementById('promoModal');
+                    if (m) m.classList.remove('open');
+                });
+                document.querySelectorAll('.promo-close-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        try { reportEvent('banner_close', { reason: 'button', page: location.pathname }); } catch (err) {}
+                        const m = document.getElementById('promoModal');
+                        if (m) m.classList.remove('open');
+                    });
+                });
+            } catch (e) {}
         });
         
         // 全局暴露SPA对象
