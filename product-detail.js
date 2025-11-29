@@ -243,7 +243,7 @@ function showBasicProductDetail(productUrl, productData) {
             <div class="product-detail-price">${priceDisplay}</div>
             <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
               <div class="product-detail-actions">
-                    <div class="agent-top">
+                    <div class="agent-top" style="display:none;">
                         <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
                             <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
                             <span class="agent-texts">
@@ -400,7 +400,7 @@ function renderProductDetail(detailData, productUrl, productData) {
             ${attributesHtml}
             <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
             <div class="product-detail-actions">
-                <div class="agent-top">
+                <div class="agent-top" style="display:none;">
                     <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
                         <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
                         <span class="agent-texts">
