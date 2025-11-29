@@ -173,10 +173,6 @@ function fetchProductDetail(productID, productUrl, productData) {
         return;
     }
     const timeoutMs = (window.CONFIG && CONFIG.API && CONFIG.API.TIMEOUT) || 10000;
-    const endpoints = [
-        'https://m.cnfans.com/search-api/detail/product-info',
-        'https://cnfans.com/search-api/detail/product-info'
-    ];
     if (!window.__ffbuy_detailCache) window.__ffbuy_detailCache = {};
     if (!window.__ffbuy_detailInflight) window.__ffbuy_detailInflight = {};
     const cacheKey = productID;
@@ -191,26 +187,27 @@ function fetchProductDetail(productID, productUrl, productData) {
             .catch(() => { showBasicProductDetail(productUrl, productData); });
         return;
     }
-    const doFetch = async () => {
-        for (let i = 0; i < endpoints.length; i++) {
-            const base = endpoints[i];
-            const url = `${base}?platform=WEIDIAN&productID=${productID}&forceReload=false&site=cnfans&lang=zh&wmc-currency=USD`;
-            try {
-                const controller = new AbortController();
-                const t = setTimeout(() => controller.abort(), timeoutMs);
-                const res = await fetch(url, { signal: controller.signal });
-                clearTimeout(t);
-                if (res && res.ok) {
-                    const json = await res.json();
-                    return json;
-                }
-            } catch (e) {}
-        }
-        return null;
+    const fetchOopbuyDetails = async () => {
+        try {
+            const url = `https://webapi.oopbuy.com/product/detail?channel=weidian&refresh=0&spuNo=${encodeURIComponent(productID)}`;
+            const controller = new AbortController();
+            const t = setTimeout(function(){ controller.abort(); }, timeoutMs);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(t);
+            if (res && res.ok) {
+                const j = await res.json();
+                let list = (j && j.result && j.result.imageList) || [];
+                if (!Array.isArray(list)) list = [];
+                list = list.map(function(it){ return typeof it === 'string' ? it : (it.url || it.imageUrl || it.img || it.src || ''); }).filter(function(u){ return u && typeof u === 'string'; });
+                const d = { data: { images: list } };
+                return d;
+            }
+        } catch (e) {}
+        return { data: { images: [] } };
     };
-    const p = doFetch();
+    const p = fetchOopbuyDetails();
     window.__ffbuy_detailInflight[cacheKey] = p;
-    p.then(data => {
+    p.then(function(data){
         delete window.__ffbuy_detailInflight[cacheKey];
         if (data) {
             window.__ffbuy_detailCache[cacheKey] = data;
@@ -218,7 +215,7 @@ function fetchProductDetail(productID, productUrl, productData) {
         } else {
             showBasicProductDetail(productUrl, productData);
         }
-    }).catch(() => {
+    }).catch(function(){
         delete window.__ffbuy_detailInflight[cacheKey];
         showBasicProductDetail(productUrl, productData);
     });
@@ -320,14 +317,14 @@ function renderProductDetail(detailData, productUrl, productData) {
     let thumbnailsHtml = '';
     
     let images = [];
-    if (data.productInfo && Array.isArray(data.productInfo.imgList) && data.productInfo.imgList.length > 0) {
+    if (data.images && data.images.length > 0) {
+        images = data.images;
+    } else if (data.productInfo && Array.isArray(data.productInfo.imgList) && data.productInfo.imgList.length > 0) {
         images = data.productInfo.imgList;
     } else if (data.imgList && data.imgList.length > 0) {
         images = data.imgList;
     } else if (data.productDetail && Array.isArray(data.productDetail.imgList) && data.productDetail.imgList.length > 0) {
         images = data.productDetail.imgList;
-    } else if (data.images && data.images.length > 0) {
-        images = data.images;
     } else {
         images = [productData.ztURL];
     }
