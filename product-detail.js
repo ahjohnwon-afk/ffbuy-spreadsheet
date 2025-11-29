@@ -240,20 +240,16 @@ function showBasicProductDetail(productUrl, productData) {
             <div class="product-detail-price">${priceDisplay}</div>
             <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
               <div class="product-detail-actions">
-                    <div class="agent-top" style="display:none;">
-                        <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
-                            <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
-                            <span class="agent-texts">
-                                <span class="agent-name">LoveGoBuy</span>
+                    <div class="agent-top">
+                        <a href="${productUrl}" target="_blank" class="product-detail-buy-btn lovegobuy-btn cnfans-btn" onclick="event.stopPropagation();">
+                            <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                        <span class="agent-texts">
+                                <span class="agent-name">CNFans</span>
                                 <span class="agent-offer-inline">10% OFF + Free Items</span>
                             </span>
                         </a>
                     </div>
                     <div class="agent-grid">
-                        <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
-                            <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
-                            <span>CNFans</span>
-                        </a>
                         <a href="${productData.acbuy || ''}" target="_blank" class="product-detail-buy-btn acbuy-btn" onclick="event.stopPropagation();">
                             <img src="img/acbuy.png" alt="acbuy" class="btn-icon">
                             <span>ACBuy</span>
@@ -397,20 +393,16 @@ function renderProductDetail(detailData, productUrl, productData) {
             ${attributesHtml}
             <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
             <div class="product-detail-actions">
-                <div class="agent-top" style="display:none;">
-                    <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/lovegobuy.png" alt="lovegobuy" class="btn-icon">
+                <div class="agent-top">
+                    <a href="${productUrl}" target="_blank" class="product-detail-buy-btn lovegobuy-btn cnfans-btn" onclick="event.stopPropagation();">
+                        <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
                         <span class="agent-texts">
-                            <span class="agent-name">LoveGoBuy</span>
+                            <span class="agent-name">CNFans</span>
                             <span class="agent-offer-inline">10% OFF + Free Items</span>
                         </span>
                     </a>
                 </div>
                 <div class="agent-grid">
-                    <a href="${productUrl}" target="_blank" class="product-detail-buy-btn cnfans-btn" onclick="event.stopPropagation();">
-                        <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
-                        <span>CNFans</span>
-                    </a>
                     <a href="${productData.acbuy || ''}" target="_blank" class="product-detail-buy-btn acbuy-btn" onclick="event.stopPropagation();">
                         <img src="img/acbuy.png" alt="acbuy" class="btn-icon">
                         <span>ACBuy</span>
