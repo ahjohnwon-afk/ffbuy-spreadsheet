@@ -284,7 +284,7 @@ function showBasicProductDetail(productUrl, productData) {
             var href = this.getAttribute('href') || '';
             e.preventDefault();
             e.stopPropagation();
-            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
+            var name = this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
             var ok = reportEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
@@ -438,7 +438,7 @@ function renderProductDetail(detailData, productUrl, productData) {
             var href = this.getAttribute('href') || '';
             e.preventDefault();
             e.stopPropagation();
-            var name = this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
+            var name = this.classList.contains('cnfans-btn') ? 'CNFANS' : this.classList.contains('lovegobuy-btn') ? 'lovegobuy' : this.classList.contains('loongbuy-btn') ? 'loongbuy' : this.classList.contains('oopbuy-btn') ? 'oopbuy' : this.classList.contains('allchinabuy-btn') ? 'allchinabuy' : this.classList.contains('mulebuy-btn') ? 'mulebuy' : this.classList.contains('kakobuy-btn') ? 'kakobuy' : this.classList.contains('acbuy-btn') ? 'acbuy' : (this.textContent || '').trim();
             var ctx = window.__ffbuy_currentProduct || {};
             var ok = reportEvent('agent_click', { agent_name: name, product_id: ctx.id || '', product_title: (ctx.title || (productData && productData.spbt) || ''), product_name: (ctx.title || (productData && productData.spbt) || ''), product_url: (ctx.url || productUrl || ''), category: (ctx.category || (window.SPA && window.SPA.currentCategory) || ''), event_callback: function(){ try { if (href) window.open(href, '_blank'); } catch (err) { if (href) location.href = href; } } });
             if (!ok && href) window.open(href, '_blank');
