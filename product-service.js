@@ -8,6 +8,10 @@ class ProductService {
 
     // 获取产品数据（带缓存和重试机制）
     async fetchProducts(endpoint) {
+        if (String(endpoint).toLowerCase() === 'hot') {
+            return this.fetchHotProductsByStats();
+        }
+
         const cacheKey = endpoint;
         
         // 检查缓存
@@ -42,6 +46,133 @@ class ProductService {
             console.error(`Error fetching products for ${endpoint}:`, error);
             throw this.handleError(error);
         }
+    }
+
+    async fetchHotProductsByStats() {
+        const cacheKey = '__hot_stats_products__';
+        if (CONFIG.CACHE.ENABLED && this.cache.has(cacheKey)) {
+            const cached = this.cache.get(cacheKey);
+            if (Date.now() - cached.timestamp < CONFIG.CACHE.EXPIRY_TIME) {
+                console.log('Using cached Hot products by stats');
+                return cached.data;
+            }
+        }
+
+        try {
+            const statsUrl = this.getFieldStatsUrl({
+                event: 'agent_click',
+                field: 'product_id',
+                unique: 'false',
+                days: '7',
+                site_id: 'ffbuy'
+            });
+            const statsResp = await this.fetchWithRetry(statsUrl);
+            const statsList = Array.isArray(statsResp?.data) ? statsResp.data : [];
+            const idToClicks = new Map();
+            statsList.forEach(item => {
+                const id = String(item?.name || '').trim();
+                const val = Number(item?.value || 0);
+                if (id) idToClicks.set(id, val);
+            });
+
+            const endpoints = (CONFIG.categories || []).map(c => c.endpoint).filter(ep => String(ep).toLowerCase() !== 'hot');
+            const fetchPromises = endpoints.map(ep => this.fetchProducts(ep).catch(() => []));
+            const allArrays = await Promise.all(fetchPromises);
+            const combined = allArrays.flat();
+
+            const grouped = new Map();
+            for (const p of combined) {
+                const pid = this.extractProductId(p);
+                if (pid && idToClicks.has(pid)) {
+                    const arr = grouped.get(pid);
+                    if (arr) arr.push(p); else grouped.set(pid, [p]);
+                }
+            }
+            const selected = [];
+            for (const [pid, arr] of grouped.entries()) {
+                if (arr.length > 0) {
+                    const clicks = idToClicks.get(pid) || 0;
+                    const idx = Math.floor(Math.random() * arr.length);
+                    const chosen = { ...arr[idx], hotClicks: clicks };
+                    selected.push(chosen);
+                }
+            }
+
+            const selectedSorted = selected.sort((a, b) => (b.hotClicks || 0) - (a.hotClicks || 0));
+            const selectedUrls = new Set(selectedSorted.map(p => p.spURL).filter(Boolean));
+            const appendPool = [];
+            for (const p of combined) {
+                if (!p || !p.spURL) continue;
+                if (selectedUrls.has(p.spURL)) continue;
+                const pid2 = this.extractProductId(p);
+                if (pid2 && idToClicks.has(pid2)) continue;
+                appendPool.push(p);
+            }
+            for (let i = appendPool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const tmp = appendPool[i];
+                appendPool[i] = appendPool[j];
+                appendPool[j] = tmp;
+            }
+            let result = selectedSorted.concat(appendPool);
+            if (result.length === 0) {
+                console.warn('No products matched field_stats IDs, falling back to Hot sheet');
+                result = await this.fetchCategoryRaw('Hot');
+            }
+
+            if (CONFIG.CACHE.ENABLED) {
+                this.updateCache(cacheKey, result);
+            }
+
+            return result;
+        } catch (err) {
+            console.error('Error building Hot products by stats:', err);
+            try {
+                return await this.fetchCategoryRaw('Hot');
+            } catch (e) {
+                throw this.handleError(err);
+            }
+        }
+    }
+
+    getFieldStatsUrl(params) {
+        const base = (CONFIG.POPULAR && CONFIG.POPULAR.BASE_URL) ? CONFIG.POPULAR.BASE_URL : 'https://webga4.lu10221.workers.dev';
+        const qs = new URLSearchParams(params).toString();
+        return `${base}/api/field_stats?${qs}`;
+    }
+
+    extractProductId(product) {
+        const raw = product?.ID || product?.Id || product?.id || '';
+        if (raw && String(raw).trim()) {
+            return String(raw).trim();
+        }
+        const urlStr = product?.spURL || '';
+        if (!urlStr) return '';
+        try {
+            const u = new URL(urlStr);
+            const cand = u.searchParams.get('itemID') || u.searchParams.get('id') || u.searchParams.get('productID');
+            if (cand && /^\d+$/.test(cand)) return cand;
+            const parts = u.pathname.split('/').filter(Boolean);
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const seg = parts[i];
+                if (/^\d{6,}$/.test(seg)) return seg;
+            }
+        } catch (_) {
+            const m = String(urlStr).match(/(\d{6,})/);
+            if (m) return m[1];
+        }
+        return '';
+    }
+
+    async fetchCategoryRaw(endpoint) {
+        const apiUrl = (CONFIG.UTILS && CONFIG.UTILS.getCategoryUrl) 
+            ? CONFIG.UTILS.getCategoryUrl(endpoint)
+            : `${CONFIG.API.BASE_URL}/${encodeURIComponent(endpoint)}`;
+        const data = await this.fetchWithRetry(apiUrl);
+        const validProducts = data.filter(product => 
+            product.spbt && product.ztURL && product.spURL
+        );
+        return validProducts;
     }
 
     // 带重试机制的fetch
