@@ -238,13 +238,13 @@ function showBasicProductDetail(productUrl, productData) {
         <div class="product-detail-info">
             <h3>${productData.spbt}</h3>
             <div class="product-detail-price">${priceDisplay}</div>
-            <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">CNFANS</span> official ordering page</p>
+            <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">KakoBuy</span> official ordering page</p>
               <div class="product-detail-actions">
                     <div class="agent-top">
-                        <a href="${productUrl}" target="_blank" class="product-detail-buy-btn lovegobuy-btn cnfans-btn" onclick="event.stopPropagation();">
-                            <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                        <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/kakobuy.webp" alt="KakoBuy" class="btn-icon">
                         <span class="agent-texts">
-                                <span class="agent-name">CNFans</span>
+                                <span class="agent-name">KakoBuy</span>
                                 <span class="agent-offer-inline">10% OFF + Free Items</span>
                             </span>
                         </a>
@@ -257,10 +257,6 @@ function showBasicProductDetail(productUrl, productData) {
                         <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
                             <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
                             <span>OopBuy</span>
-                        </a>
-                        <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
-                            <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
-                            <span>KakoBuy</span>
                         </a>
                         <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
                             <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
@@ -394,10 +390,10 @@ function renderProductDetail(detailData, productUrl, productData) {
             <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
             <div class="product-detail-actions">
                 <div class="agent-top">
-                    <a href="${productUrl}" target="_blank" class="product-detail-buy-btn lovegobuy-btn cnfans-btn" onclick="event.stopPropagation();">
-                        <img src="img/cnfans.webp" alt="CNFANS" class="btn-icon">
+                    <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/kakobuy.webp" alt="KakoBuy" class="btn-icon">
                         <span class="agent-texts">
-                            <span class="agent-name">CNFans</span>
+                            <span class="agent-name">KakoBuy</span>
                             <span class="agent-offer-inline">10% OFF + Free Items</span>
                         </span>
                     </a>
@@ -408,13 +404,9 @@ function renderProductDetail(detailData, productUrl, productData) {
                         <span>ACBuy</span>
                     </a>
                     <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
-                        <span>OopBuy</span>
-                    </a>
-                    <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/kakobuy.webp" alt="kakobuy" class="btn-icon">
-                        <span>KakoBuy</span>
-                    </a>
+                            <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
+                            <span>OopBuy</span>
+                        </a>
                     <a href="${productData.mulebuy || ''}" target="_blank" class="product-detail-buy-btn mulebuy-btn" onclick="event.stopPropagation();">
                         <img src="img/mulebuy.webp" alt="mulebuy" class="btn-icon">
                         <span>MuleBuy</span>
