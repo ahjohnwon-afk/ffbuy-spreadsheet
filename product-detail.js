@@ -238,13 +238,13 @@ function showBasicProductDetail(productUrl, productData) {
         <div class="product-detail-info">
             <h3>${productData.spbt}</h3>
             <div class="product-detail-price">${priceDisplay}</div>
-            <p class="product-detail-visit-text">Click to visit <span style="color: #2476db; font-weight: 600;">KakoBuy</span> official ordering page</p>
+            <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
               <div class="product-detail-actions">
                     <div class="agent-top">
-                        <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn kakobuy-btn" onclick="event.stopPropagation();">
-                            <img src="img/kakobuy.webp" alt="KakoBuy" class="btn-icon">
+                        <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/lovegobuy.png" alt="LoveGoBuy" class="btn-icon">
                         <span class="agent-texts">
-                                <span class="agent-name">KakoBuy</span>
+                                <span class="agent-name">LoveGoBuy</span>
                                 <span class="agent-offer-inline">10% OFF + Free Items</span>
                             </span>
                         </a>
@@ -390,10 +390,10 @@ function renderProductDetail(detailData, productUrl, productData) {
             <p class="product-detail-visit-text"><span style="color: #2476db; font-weight: 600;">Select the agent</span> you want to buy on</p>
             <div class="product-detail-actions">
                 <div class="agent-top">
-                    <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn kakobuy-btn" onclick="event.stopPropagation();">
-                        <img src="img/kakobuy.webp" alt="KakoBuy" class="btn-icon">
+                    <a href="${productData.lovegobuy || ''}" target="_blank" class="product-detail-buy-btn lovegobuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/lovegobuy.png" alt="LoveGoBuy" class="btn-icon">
                         <span class="agent-texts">
-                            <span class="agent-name">KakoBuy</span>
+                            <span class="agent-name">LoveGoBuy</span>
                             <span class="agent-offer-inline">10% OFF + Free Items</span>
                         </span>
                     </a>
