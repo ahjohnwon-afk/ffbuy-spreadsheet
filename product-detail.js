@@ -254,6 +254,10 @@ function showBasicProductDetail(productUrl, productData) {
                             <img src="img/acbuy.png" alt="acbuy" class="btn-icon">
                             <span>ACBuy</span>
                         </a>
+                        <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                            <img src="img/kakobuy.webp" alt="KakoBuy" class="btn-icon">
+                            <span>KakoBuy</span>
+                        </a>
                         <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
                             <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
                             <span>OopBuy</span>
@@ -402,6 +406,10 @@ function renderProductDetail(detailData, productUrl, productData) {
                     <a href="${productData.acbuy || ''}" target="_blank" class="product-detail-buy-btn acbuy-btn" onclick="event.stopPropagation();">
                         <img src="img/acbuy.png" alt="acbuy" class="btn-icon">
                         <span>ACBuy</span>
+                    </a>
+                    <a href="${productData.kakobuy || ''}" target="_blank" class="product-detail-buy-btn kakobuy-btn" onclick="event.stopPropagation();">
+                        <img src="img/kakobuy.webp" alt="KakoBuy" class="btn-icon">
+                        <span>KakoBuy</span>
                     </a>
                     <a href="${productData.oopbuy || ''}" target="_blank" class="product-detail-buy-btn oopbuy-btn" onclick="event.stopPropagation();">
                             <img src="img/oopbuy.webp" alt="oopbuy" class="btn-icon">
